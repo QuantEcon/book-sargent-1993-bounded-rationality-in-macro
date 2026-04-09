@@ -40,7 +40,9 @@ Review the output for:
 
 ### Step 2: Set up project structure
 
-Create the target file structure:
+Choose your file organization based on document length and structure:
+
+**Single-file** (articles, short papers ≤ ~10 pages):
 
 ```
 paper/
@@ -50,9 +52,28 @@ paper/
 myst.yml            # MyST project configuration
 ```
 
-Copy extracted images from `marker_output/` into `paper/figures/`, renaming them to descriptive names (e.g., `fig1_classifier_flow.png` rather than `_page_11_Figure_2.jpeg`).
+**Multi-chapter** (books, monographs, long papers > ~10 pages with chapters):
 
-Create a minimal `myst.yml`:
+```
+paper/
+  ch01.md           # Front matter + Chapter 1
+  ch02.md           # Chapter 2
+  ch03.md           # Chapter 3
+  ...               # One file per chapter
+  references.bib    # BibTeX bibliography
+  figures/           # Extracted/recreated figures
+myst.yml            # MyST project configuration
+```
+
+The multi-chapter approach is strongly recommended for longer documents because:
+- It keeps each conversion task within LLM context limits
+- Chapters can be converted independently (and in parallel via subagents)
+- Errors are isolated to individual chapters rather than cascading
+- Easier to review and QA section by section
+
+Copy extracted images from `marker_output/` into `paper/figures/`. You may keep the marker-generated names (e.g., `_page_11_Figure_2.jpeg`) or rename to descriptive names.
+
+Create `myst.yml`. For **single-file** projects:
 
 ```yaml
 version: 1
@@ -69,13 +90,47 @@ site:
   template: book-theme
 ```
 
-### Step 3: Convert marker output to MyST Markdown (full paper pass)
+For **multi-chapter** projects:
 
-Using the LLM, convert the raw marker Markdown into properly formatted MyST Markdown. Provide the LLM with:
+```yaml
+version: 1
+project:
+  title: "<Book/Paper Title>"
+  authors:
+    - name: <Author 1>
+  bibliography:
+    - paper/references.bib
+  toc:
+    - file: index.md
+    - title: Paper
+      children:
+        - file: paper/ch01.md
+          title: "1 Introduction"
+        - file: paper/ch02.md
+          title: "2 Chapter Title"
+        # ... one entry per chapter
+site:
+  template: book-theme
+  options:
+    base_url: /<repository-name>
+```
 
-1. The raw marker output (`<name>.md`)
+Note: Only `ch01.md` needs the full YAML frontmatter (title, authors, date, bibliography). Subsequent chapter files need only the chapter title in frontmatter or can start directly with the chapter heading.
+
+### Step 3: Convert marker output to MyST Markdown
+
+Using the LLM, convert the raw marker Markdown into properly formatted MyST Markdown. For **multi-chapter** projects, work one chapter at a time — provide the LLM with the relevant portion of the marker output for each chapter.
+
+Provide the LLM with:
+
+1. The raw marker output (`<name>.md`) — or the relevant chapter portion
 2. The original PDF (for visual verification of tables, equations, and layout)
 3. The instructions below
+
+**Numbering convention for multi-chapter projects:** Use chapter-scoped label prefixes:
+- Equations: `(eq-2-1)`, `(eq-2-2)`, ... for Chapter 2
+- Figures: `fig-3-1`, `fig-3-2`, ... for Chapter 3
+- Footnotes: Number sequentially across the entire document (`[^fn1]` through `[^fnN]`)
 
 #### LLM Conversion Instructions
 
@@ -357,9 +412,10 @@ Figure 1: Caption text
 
 ---
 
-## Lessons Learned from This Project
+## Lessons Learned
 
-These observations come from converting Marimon, McGrattan & Sargent (1990), a 45-page economics paper with 17 equations, 66 tables, 17 footnotes, 10 figures, and 21 references.
+### From Marimon, McGrattan & Sargent (1990)
+*45-page economics paper: 17 equations, 66 tables, 17 footnotes, 10 figures, 21 references.*
 
 1. **`marker-pdf` gets you ~60–70% of the way.** The raw extraction captures prose well but frequently loses complex tables, later footnotes, and some equation formatting. Plan to spend significant effort on tables.
 
@@ -374,3 +430,20 @@ These observations come from converting Marimon, McGrattan & Sargent (1990), a 4
 6. **The quality assessment report is a deliverable.** Producing a structured fidelity report (like our `2026-02-16-pdf-to-myst-comparison.md`) forces thoroughness and creates an auditable record of conversion quality.
 
 7. **`myst build` is your friend.** Build early and often. Broken LaTeX, unresolved cross-references, and malformed tables show up immediately in build output.
+
+### From Sargent (1993) — Bounded Rationality in Macroeconomics
+*204-page book (7 chapters): ~130 equations, 51 figures, 158 footnotes, 198 references, 0 tables.*
+
+8. **Split long documents into per-chapter files.** A single 200+ page document overwhelms LLM context. Splitting into `ch01.md`–`ch07.md` made each chapter independently convertible and dramatically improved quality. This is the most important lesson for book-length works.
+
+9. **Chapters can be converted in parallel.** With per-chapter files, independent chapters can be handed to subagents for simultaneous conversion, significantly reducing total wall-clock time.
+
+10. **Book-length PDFs take ~60+ min with marker-pdf.** A 204-page book took ~64 minutes on macOS (CPU-bound; MPS not supported for the table detection model). Plan accordingly.
+
+11. **marker-pdf occasionally misses the second figure from a page.** When two figures appear on the same PDF page, marker sometimes extracts only one. We saw 2 of 51 images missing. These need manual extraction from the source PDF.
+
+12. **References are usually well-extracted.** The bibliography section is predominantly plain text and extracts cleanly. Converting ~200 entries to BibTeX is straightforward (and a good task for an LLM).
+
+13. **`base_url` is needed for GitHub Pages.** Set `site.options.base_url: /<repo-name>` in `myst.yml`. The GitHub Actions workflow should also set `BASE_URL` as an environment variable.
+
+14. **Chapter 5 (the core technical chapter) was by far the largest** at ~1,100 lines — as long as chapters 2, 3, 6, and 7 combined. Expect uneven chapter sizes; the most technical/mathematical chapters will require the most conversion effort.
