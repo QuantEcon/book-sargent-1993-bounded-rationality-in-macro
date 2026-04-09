@@ -12,11 +12,24 @@ This workflow assumes you are operating inside an IDE (VS Code + Copilot) with a
 
 | Tool | Role | Install |
 |------|------|---------|
-| `marker-pdf` | PDF → raw Markdown extraction (text, equations, images) | `pip install marker-pdf` |
+| `uv` | Python package & environment manager | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
+| `marker-pdf` | PDF → raw Markdown extraction (text, equations, images) | `uv add marker-pdf` (or listed in `pyproject.toml`) |
 | LLM (Claude / GPT) | Raw Markdown → MyST Markdown conversion, QA, cross-referencing | Available in IDE |
 | `mystmd` | Build & verify MyST output (HTML, PDF) | `npm install -g mystmd` |
 
 No other tools are required. `marker-pdf` handles OCR, equation extraction, and image extraction in one pass.
+
+### Setup
+
+```bash
+# Install uv (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Create virtual environment and install all dependencies
+uv sync
+```
+
+This creates a `.venv/` inside the repo with all Python dependencies (numpy, matplotlib, marker-pdf, etc.) isolated from other projects. Use `uv run <command>` to run tools in the environment.
 
 ---
 
@@ -25,7 +38,7 @@ No other tools are required. `marker-pdf` handles OCR, equation extraction, and 
 ### Step 1: Run `marker-pdf` on the source PDF
 
 ```bash
-marker_single <input.pdf> --output_dir _archive/marker_output/
+uv run marker_single <input.pdf> --output_dir _archive/marker_output/
 ```
 
 This produces:
