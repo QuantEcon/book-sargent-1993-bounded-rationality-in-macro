@@ -1,0 +1,10 @@
+[project]
+name = "paper-sargent-1993-bounded-rationality-in-macro"
+version = "0.1.0"
+description = "Bounded Rationality in Macroeconomics - Sargent (1993) - MyST replication and companion resources"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy>=1.24.0",
+    "matplotlib>=3.7.0",
+    "marker-pdf>=1.0.0",
+]

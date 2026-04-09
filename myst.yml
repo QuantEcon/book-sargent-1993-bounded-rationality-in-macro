@@ -1,0 +1,38 @@
+version: 1
+project:
+  title: "Bounded Rationality in Macroeconomics"
+  subtitle: "Replication of Sargent (1993)"
+  authors:
+    - name: Thomas J. Sargent
+  date: 1993-01-01
+  keywords:
+    - bounded rationality
+    - macroeconomics
+    - artificial intelligence
+    - learning
+    - adaptive expectations
+  bibliography:
+    - paper/references.bib
+  toc:
+    - file: index.md
+    - title: Paper
+      children:
+        - file: paper/ch01.md
+          title: "1 Introduction"
+        - file: paper/ch02.md
+          title: "2 Expectations and Behavior"
+        - file: paper/ch03.md
+          title: "3 Data Structures"
+        - file: paper/ch04.md
+          title: "4 Networks and Artificial Intelligence"
+        - file: paper/ch05.md
+          title: "5 Adaptation in Artificial Economies"
+        - file: paper/ch06.md
+          title: "6 Experiments"
+        - file: paper/ch07.md
+          title: "7 Applications"
+
+site:
+  template: book-theme
+  options:
+    base_url: /paper.sargent-1993.bounded-rationality-in-macro
