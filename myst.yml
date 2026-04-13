@@ -35,4 +35,4 @@ project:
 site:
   template: book-theme
   options:
-    base_url: /paper.sargent-1993.bounded-rationality-in-macro
+    base_url: /book-sargent-1993-bounded-rationality-in-macro
