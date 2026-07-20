@@ -10,7 +10,10 @@ to this report the only verification on record was `myst build --html`
 succeeding, which establishes that the document *compiles*, not that it *matches
 the original*.
 
-Every defect it found has been fixed. What remains open is listed at the end.
+Every defect this report set out to find has been fixed, with one exception
+discovered afterwards: Chapter 7's equation numbering is displaced by two
+(#2). What remains open is listed at the end, and every item is tracked as an
+issue.
 
 ---
 
@@ -58,10 +61,10 @@ report's own method.
 | ch02 | 4,896 | 4,891 | 86.8% | 86.9% |
 | ch03 | 2,468 | 2,456 | 79.7% | 80.1% |
 | ch04 | 3,726 | 3,690 | 80.5% | 81.4% |
-| ch05 | 7,067 | 6,966 | 76.3% | 77.7% |
+| ch05 | 7,067 | 6,969 | 76.3% | 77.7% |
 | ch06 | 2,332 | 2,310 | 77.8% | 78.6% |
 | ch07 | 3,236 | 3,234 | 85.8% | 85.8% |
-| **Total** | **24,495** | **24,622** | **81.3%** | |
+| **Total** | **24,495** | **24,625** | **81.3%** | |
 
 Word-count parity is the more legible signal: ch02 4,896 vs 4,891, ch07 3,236 vs
 3,234. A dropped paragraph would leave MyST short by its length. ch01 runs long
@@ -80,7 +83,7 @@ have been fixed.
 | Item | Count | Note |
 |---|---:|---|
 | Labelled equations | 117 | every number 1..max labelled in each chapter |
-| Figure labels | 47 | all image references resolve |
+| Figure labels | 48 | all image references resolve |
 | Footnote definitions | 160 | sequential `fn1`–`fn160`, every marker paired |
 | Citations linked | 188 | was 0 before this pass |
 | Distinct bib keys cited | 128 | of 198 entries |
@@ -343,13 +346,24 @@ so this is a defensible convention rather than an error, but it is a deviation.
 ## Reproducing
 
 ```bash
+python scripts/check_structure.py             # structural assertions (no PDF needed)
 uv run python scripts/validate_prose.py       # prose fidelity vs the PDF
 uv run python scripts/link_citations.py       # citation linkage
 uv run python scripts/renumber_footnotes.py   # footnote label sequence
 ```
 
-All three are deterministic and default to reporting only; the latter two write
-only with `--apply`.
+All four are deterministic and default to reporting only; `link_citations.py`
+and `renumber_footnotes.py` write only with `--apply`.
+
+`check_structure.py` is the one that runs in CI, on every pull request via
+`.github/workflows/validate.yml`, alongside a MyST build whose log is grepped
+for warnings — `myst build` exits 0 even when it cannot find a referenced image,
+which is how two figures stayed missing for months behind a green build. It is
+stdlib-only so CI needs no dependency install.
+
+The other three cannot run in CI: they need the source scan, which is gitignored
+as a copyrighted 8 MB book. Prose fidelity is therefore permanently a local
+check, available only to someone holding a copy of the PDF.
 
 ---
 
