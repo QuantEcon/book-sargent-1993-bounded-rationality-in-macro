@@ -78,8 +78,8 @@ content — e.g. it claimed `fn1–fn25` for ch02, which really holds 32 footnot
 | Ch 4: Networks and AI | `ch04.md` | 542 | 14 | 7 | 23 | 18 |
 | Ch 5: Adaptation in Artificial Economies | `ch05.md` | 1,122 | 46 | 18 | 47 | 61 |
 | Ch 6: Experiments | `ch06.md` | 291 | 10 | 15 | 18 | 17 |
-| Ch 7: Applications | `ch07.md` | 262 | 10 | 3 | 23 | 25 |
-| **Total** | | **3,171** | **117** | **47** | **160** | **188** |
+| Ch 7: Applications | `ch07.md` | 260 | 8 | 3 | 23 | 25 |
+| **Total** | | **3,169** | **115** | **48** | **160** | **188** |
 | References | `references.bib` | 1,660 | — | — | — | 198 entries |
 | Indexes | — | — | — | — | — | Omitted; MyST generates navigation |
 
@@ -194,18 +194,27 @@ checked by rendering its page at 300 dpi and reading it against the source.
 Equation discrepancies were then attacked by three independent refuters before
 being believed; each re-crop was confirmed by a second pass from a fresh render.
 
-**Equations: 117 of 117 verified; the content is sound.** Six discrepancies
-raised, one refuted, five survived. The two conversion errors are now fixed —
-eq-7-1, where the book prints η and the MyST had `n`, and eq-4-14, which had
-dropped its companion display. Three silent corrections of the printed page
+**All 117 then-labelled equations were verified; the content is sound.** Six
+discrepancies raised, one refuted, five survived. The two conversion errors are
+now fixed — the Kuan–Liu forecast error, where the book prints η and the MyST
+had `n`, and eq-4-14, which had dropped its companion display. That equation is
+named by content because it carried the label `eq-7-1` when the defect was
+found and is now inline and unnumbered, so `eq-7-1` denotes something else. Three silent corrections of the printed page
 remain open (eq-4-3, eq-5-13, eq-2-14), tracked in issue #3.
 
 The audit checked equation *content*, not equation *numbering*, and Chapter 7's
-numbering turns out to be displaced by two: the book numbers eight equations
-there while the conversion labels ten, having numbered two displays the book
-leaves unnumbered. Tracked in issue #2. `scripts/check_structure.py` cannot
-catch this — it asserts only that each chapter's labels form a complete 1..max
-run, which a uniformly displaced sequence satisfies.
+numbering turned out to be displaced by two: the book numbers eight equations
+there while the conversion labelled ten, having numbered two displays the book
+leaves unnumbered. Fixed (#2) by matching each printed number against renders of
+PDF pp. 175-177, unnumbering the two extras and returning the first to the
+inline form the book uses, then renumbering the rest and updating the 13 `{eq}`
+references. The chapter's labelled equations therefore fall from 10 to 8, and
+the book's total from 117 to 115.
+
+`scripts/check_structure.py` could not have caught this: it asserts only that
+each chapter's labels form a complete 1..max run, which a uniformly displaced
+sequence satisfies. No check compares MyST numbering against the printed
+numbering, and closing that gap would need the source scan as an input.
 
 **Figures: 47 checked, 16 problems — the weak point of the conversion.** Fixed:
 
@@ -229,7 +238,7 @@ while the build stays green and prose checks stay quiet. Figure-to-caption
 correspondence needs its own assertion.
 
 Still open, each tracked as a GitHub issue so this file and the issue list do
-not drift apart: Chapter 7's displaced equation numbering (#2); three equations
+not drift apart: three equations
 and six figure captions that silently correct the printed page (#3), all turning
 on whether this edition reproduces the 1993 text as printed or corrects it with
 a note; thirteen page-qualified and multi-year citations MyST cannot express
