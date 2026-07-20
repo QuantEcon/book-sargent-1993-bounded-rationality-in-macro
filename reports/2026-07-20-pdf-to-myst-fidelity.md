@@ -182,26 +182,45 @@ discrepancy was then attacked by three independent refuters (transcription,
 mathematics, scan-legibility) with majority-refute dropping the claim; every
 re-crop was confirmed by a second agent working from a fresh render.
 
-**Equations: 117 of 117 checked, and they are sound.** Six discrepancies were
-raised, one was refuted, five survived. Only two are conversion errors:
+**Equations: 117 of 117 checked, and their content is sound.** Six discrepancies
+were raised, one was refuted, five survived. Two were conversion errors and are
+now fixed:
 
-- **eq-7-1** (ch07) — the book prints η; the MyST has Latin `n`. The
-  surrounding prose repeats it, so it is consistent but wrong, and it breaks the
-  link to the η used in eq-7-3 and eq-7-7. **Open.**
-- **eq-4-14** (ch04) — the book gives two displays joined by "or"; the MyST
+- **eq-7-1** (ch07) — the book prints η; the MyST had Latin `n`, both in the
+  equation and in the sentence after it, though the same chapter renders η
+  correctly in eq-7-3 and eq-7-7. **Fixed.**
+- **eq-4-14** (ch04) — the book gives two displays joined by "or"; the MyST had
   dropped the unnumbered gradient form
   `v_{i,t+1} = tanh(−(∂C/∂v_it)/T)`, removing the derivation link between the
-  cost function and the update rule. **Open.**
+  cost function and the update rule. **Fixed.**
 
 Three more are places where the MyST silently *corrects* the printed page, which
 against an exact-replication mandate is an editorial decision rather than a
-defect. All three are **open**:
+defect. All three are open, tracked in issue #3:
 
 | | Book prints | MyST has | Note |
 |---|---|---|---|
 | eq-4-3 | `g(x) − θ₀ + Σ` | `− Σ` | MyST is mathematically right; the book's `+` looks like a typesetting error |
 | eq-5-13 | `Nf(G_{t+1})` | `Nf(G_t)` | MyST matches the derivation, but ch05.md line 461 still reproduces the printed form, so the file contradicts itself |
 | eq-2-14 | tag on the 1st display | tag on the 2nd | cosmetic; eq-2-15 and eq-2-18 follow the print, so eq-2-14 is the odd one out |
+
+### What the equation audit did not check
+
+It compared equation *content* against the scans. It never checked that the
+MyST's equation *numbers* correspond to the book's — and in Chapter 7 they do
+not. The book numbers eight equations there; the conversion labels ten, having
+given numbers to two displays the book leaves unnumbered (one of them set inline
+in a sentence). Every ch07 equation number is therefore displaced by two: the
+book's equation (1) is the one labelled `eq-7-3`. Chapters 2 to 6 were checked
+the same way afterwards and all align correctly. Tracked in issue #2.
+
+`scripts/check_structure.py` cannot catch this either. It asserts that a
+chapter's labels form a complete 1..max run, which a uniformly displaced
+sequence satisfies perfectly. No check compares MyST numbering against the
+printed numbering, and none exists yet.
+
+This is worth stating plainly because the section above reads as though equation
+numbering were verified. It was not. Only content was.
 
 **Figures: 47 checked, 16 problems.** The figures were in materially worse shape
 than the equations — the reverse of what the prose-coverage work suggested.
@@ -263,7 +282,7 @@ that were marker originals remain in `_archive/marker_output/`.
 
 ## Still open
 
-**Thirteen citations remain unlinked** — page-qualified and multi-year forms,
+**Thirteen citations remain unlinked** (#4) — page-qualified and multi-year forms,
 which MyST has no locator syntax for: `Hurwicz (1946, p. 133)`, `Sargent (1987,
 ch. XIII)`, `Barsalou (1992, p. 9)`, `Friedman and Schwartz (1963, pp. 156–68)`,
 `Lucas (1981, pp. 221, 283)`, `Ljung, Pflug, and Walk (1992, pp. 99–100)`,
@@ -279,37 +298,42 @@ ambiguity is in the original, not the conversion. Linked to
 `OVERRIDES` in `scripts/link_citations.py`. Worth confirming against the printed
 reference list.
 
-**A three-author work may be missing from the bibliography.** The restored ch05
+**A three-author work may be missing from the bibliography** (#5). The restored ch05
 footnote cites "Evans, Honkapohja, and Sargent (1993)", for which there is no
 entry; the bibliography has `EvansSargent1993` (two authors) and
 `EvansHonkapohja1993a`/`b`. That citation is left as plain text pending a check
 of the printed reference list.
 
-**70 of 198 bibliography entries are uncited.** Expected in part — a book's
+**70 of 198 bibliography entries are uncited** (#6). Expected in part — a book's
 reference list carries works not cited inline — but large enough to be worth a
 pass, since some may be citations the scanner's patterns miss.
 
-**Figure directives are stylistically inconsistent**: ch02–ch04 use `:label:`,
+**Figure directives are stylistically inconsistent** (#8): ch02–ch04 use `:label:`,
 ch05–ch07 use `:name:`. Both are valid MyST and both resolve; harmonising is
 cosmetic.
 
-**Five equation items await an editorial decision**, listed under "Equation and
-figure audit" above: two conversion errors (eq-7-1's η transcribed as `n`,
-eq-4-14's dropped companion display) and three places where the MyST silently
-corrects the printed page (eq-4-3, eq-5-13, eq-2-14). The last three turn on
-whether this edition reproduces the book as printed or corrects it with a note.
+Everything below is tracked as a GitHub issue, so this section and the issue
+list should not drift apart.
 
-**Six figure caption mismatches are unfixed**, each needing the same
-reproduce-or-correct call: fig-3-1 ("eighth-order" where the book prints
-"eight-order"), fig-4-5a/4-5b (`tanh(z/T)` where the book and the surrounding
-MyST both use `x`), fig-5-6 (subscript `t` for the printed `i`, and a dropped
-bar), fig-6-4a (swaps which symbol carries the value 10), and fig-7-2b (an em
-dash the print does not have).
+**Chapter 7's equation numbering is displaced by two** from the printed book
+(#2). The two conversion errors found by the audit — eq-7-1's η and eq-4-14's
+dropped display — are fixed, so no equation *content* defect remains.
 
-Two further figures are clipped **in the source scan itself** — fig-5-12b's
+**Three equations and six figure captions silently correct the printed page**
+(#3), and all nine turn on a single decision: does this edition reproduce the
+1993 text as printed, or correct it with a note? The equations are eq-4-3,
+eq-5-13 and eq-2-14; the captions are fig-3-1 ("eighth-order" where the book
+prints "eight-order"), fig-4-5a/4-5b (`tanh(z/T)` where the book and the
+surrounding MyST both use `x`), fig-5-6 (subscript `t` for the printed `i`, and
+a dropped bar), fig-6-4a (swaps which symbol carries the value 10), and fig-7-2b
+(an em dash the print does not have). Two of these — fig-6-4a and fig-5-6 — look
+like transcription slips rather than deliberate corrections, and arguably want
+fixing whichever way the policy lands.
+
+Two further figures are clipped **in the source scan itself** (#7) — fig-5-12b's
 final x tick and fig-7-2a's y-axis signs — and no crop can recover them.
 
-Prose references to figure *pairs* resolve to the first panel: the book writes
+Prose references to figure *pairs* resolve to the first panel (#8): the book writes
 "Figure 9 shows saving rates for the two types of agents", which renders as
 "Figure 9a shows…" though the pair spans 9a and 9b. MyST needs a single target,
 so this is a defensible convention rather than an error, but it is a deviation.

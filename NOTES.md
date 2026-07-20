@@ -194,10 +194,18 @@ checked by rendering its page at 300 dpi and reading it against the source.
 Equation discrepancies were then attacked by three independent refuters before
 being believed; each re-crop was confirmed by a second pass from a fresh render.
 
-**Equations: 117 of 117 verified, and sound.** Six discrepancies raised, one
-refuted, five outstanding — two conversion errors (eq-7-1 prints η but the MyST
-has `n`; eq-4-14 dropped its companion display) and three silent corrections of
-the printed page (eq-4-3, eq-5-13, eq-2-14).
+**Equations: 117 of 117 verified; the content is sound.** Six discrepancies
+raised, one refuted, five survived. The two conversion errors are now fixed —
+eq-7-1, where the book prints η and the MyST had `n`, and eq-4-14, which had
+dropped its companion display. Three silent corrections of the printed page
+remain open (eq-4-3, eq-5-13, eq-2-14), tracked in issue #3.
+
+The audit checked equation *content*, not equation *numbering*, and Chapter 7's
+numbering turns out to be displaced by two: the book numbers eight equations
+there while the conversion labels ten, having numbered two displays the book
+leaves unnumbered. Tracked in issue #2. `scripts/check_structure.py` cannot
+catch this — it asserts only that each chapter's labels form a complete 1..max
+run, which a uniformly displaced sequence satisfies.
 
 **Figures: 47 checked, 16 problems — the weak point of the conversion.** Fixed:
 
@@ -220,10 +228,15 @@ page fails by *offset*, not loudly. Every downstream figure inherits the error
 while the build stays green and prose checks stay quiet. Figure-to-caption
 correspondence needs its own assertion.
 
-Still open: six figure caption mismatches and the five equation items, all
-turning on whether this edition reproduces the 1993 text as printed or corrects
-it with a note. Two figures are clipped in the source scan itself and cannot be
-recovered by any crop.
+Still open, each tracked as a GitHub issue so this file and the issue list do
+not drift apart: Chapter 7's displaced equation numbering (#2); three equations
+and six figure captions that silently correct the printed page (#3), all turning
+on whether this edition reproduces the 1993 text as printed or corrects it with
+a note; thirteen page-qualified and multi-year citations MyST cannot express
+(#4); a cited three-author work with no bibliography entry (#5); 70 of 198
+entries uncited (#6); two figures clipped in the source scan itself and
+unrecoverable by any crop (#7); and minor directive-style and
+figure-pair-reference inconsistencies (#8).
 
 ---
 
