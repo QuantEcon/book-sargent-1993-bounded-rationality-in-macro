@@ -194,10 +194,12 @@ checked by rendering its page at 300 dpi and reading it against the source.
 Equation discrepancies were then attacked by three independent refuters before
 being believed; each re-crop was confirmed by a second pass from a fresh render.
 
-**Equations: 117 of 117 verified; the content is sound.** Six discrepancies
-raised, one refuted, five survived. The two conversion errors are now fixed —
-eq-7-1, where the book prints η and the MyST had `n`, and eq-4-14, which had
-dropped its companion display. Three silent corrections of the printed page
+**All 117 then-labelled equations were verified; the content is sound.** Six
+discrepancies raised, one refuted, five survived. The two conversion errors are
+now fixed — the Kuan–Liu forecast error, where the book prints η and the MyST
+had `n`, and eq-4-14, which had dropped its companion display. That equation is
+named by content because it carried the label `eq-7-1` when the defect was
+found and is now inline and unnumbered, so `eq-7-1` denotes something else. Three silent corrections of the printed page
 remain open (eq-4-3, eq-5-13, eq-2-14), tracked in issue #3.
 
 The audit checked equation *content*, not equation *numbering*, and Chapter 7's

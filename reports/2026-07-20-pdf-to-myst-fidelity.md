@@ -185,13 +185,17 @@ discrepancy was then attacked by three independent refuters (transcription,
 mathematics, scan-legibility) with majority-refute dropping the claim; every
 re-crop was confirmed by a second agent working from a fresh render.
 
-**Equations: 117 of 117 checked, and their content is sound.** Six discrepancies
-were raised, one was refuted, five survived. Two were conversion errors and are
-now fixed:
+**All 117 then-labelled equations were checked, and their content is sound.**
+Six discrepancies were raised, one was refuted, five survived. Two were
+conversion errors and are now fixed. (Two ch07 displays were subsequently
+unnumbered to match the book, which is why the count in the table above is 115.)
 
-- **eq-7-1** (ch07) — the book prints η; the MyST had Latin `n`, both in the
-  equation and in the sentence after it, though the same chapter renders η
-  correctly in eq-7-3 and eq-7-7. **Fixed.**
+- **The Kuan–Liu forecast error** (ch07) — the book prints η; the MyST had Latin
+  `n`, both in the equation and in the sentence after it, though the same
+  chapter renders η correctly in what are now `eq-7-1` and `eq-7-5`. **Fixed.**
+  Named by content rather than by label: this equation carried the label
+  `eq-7-1` when the defect was found, but it is now set inline and unnumbered,
+  as the book sets it, and `eq-7-1` denotes a different equation.
 - **eq-4-14** (ch04) — the book gives two displays joined by "or"; the MyST had
   dropped the unnumbered gradient form
   `v_{i,t+1} = tanh(−(∂C/∂v_it)/T)`, removing the derivation link between the
@@ -329,7 +333,8 @@ Everything below is tracked as a GitHub issue, so this section and the issue
 list should not drift apart.
 
 No equation defect remains, of content or numbering. Chapter 7's displacement
-(#2), eq-7-1's η and eq-4-14's dropped companion display are all fixed.
+(#2), the Kuan–Liu forecast error's η and eq-4-14's dropped companion
+display are all fixed.
 
 **Three equations and six figure captions silently correct the printed page**
 (#3), and all nine turn on a single decision: does this edition reproduce the
@@ -384,8 +389,8 @@ now been checked against the source.
 **Prose** is sound: two dropped footnotes were the only content loss in ~24,500
 words, and word-count parity holds to within a fraction of a percent per
 chapter. **Equations** are sound: all 117 were verified against the page scans,
-and the three defects found — eq-7-1's η, eq-4-14's dropped companion display,
-and Chapter 7's displaced numbering — are fixed. Three deliberate-looking
+and the three defects found — the Kuan–Liu forecast error's η, eq-4-14's
+dropped companion display, and Chapter 7's displaced numbering — are fixed. Three deliberate-looking
 corrections of the printed text remain, as decisions rather than defects.
 **Structure** is clean: bibliography linked, every equation labelled and
 numbered as the book numbers it, every reference resolving, build warning-free.
