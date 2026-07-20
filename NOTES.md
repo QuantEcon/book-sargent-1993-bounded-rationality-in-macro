@@ -182,9 +182,61 @@ Still open:
 - "Evans, Honkapohja, and Sargent (1993)" has no bibliography entry.
 - 70 of 198 bibliography entries uncited.
 
-Not covered by this method: equation correctness and figure content. The OCR
-layer garbles maths and cannot see inside images, so those still need visual
-comparison against the PDF.
+---
+
+## Step 8: Equation and Figure Audit
+
+- **Date**: 2026-07-20
+- Same report: `reports/2026-07-20-pdf-to-myst-fidelity.md`
+
+The OCR layer cannot reach maths or images, so every equation and figure was
+checked by rendering its page at 300 dpi and reading it against the source.
+Equation discrepancies were then attacked by three independent refuters before
+being believed; each re-crop was confirmed by a second pass from a fresh render.
+
+**Equations: 117 of 117 verified; the content is sound.** Six discrepancies
+raised, one refuted, five survived. The two conversion errors are now fixed —
+eq-7-1, where the book prints η and the MyST had `n`, and eq-4-14, which had
+dropped its companion display. Three silent corrections of the printed page
+remain open (eq-4-3, eq-5-13, eq-2-14), tracked in issue #3.
+
+The audit checked equation *content*, not equation *numbering*, and Chapter 7's
+numbering turns out to be displaced by two: the book numbers eight equations
+there while the conversion labels ten, having numbered two displays the book
+leaves unnumbered. Tracked in issue #2. `scripts/check_structure.py` cannot
+catch this — it asserts only that each chapter's labels form a complete 1..max
+run, which a uniformly displaced sequence satisfies.
+
+**Figures: 47 checked, 16 problems — the weak point of the conversion.** Fixed:
+
+- A one-position shift through ch05. marker extracted three of the four panels
+  on PDF p. 125, missing printed Figure 8, and every later directive took the
+  next image along: four figures showed the wrong plot and two printed figures
+  appeared nowhere. fig-5-8 was captioned as an exchange rate while showing a
+  saving rate. Captions were all correct, so the fix was re-pointing plus one
+  new crop, and fig-5-10b was added.
+- fig-6-5e reused fig-6-5d's file; printed Figure 5e had never been extracted.
+- fig-4-4a and fig-6-4b each contained both side-by-side panels.
+- fig-6-6c was misaligned, bleeding in caption text and losing its x-axis.
+- fig-3-2 clipped a tick label — an error in the earlier hand-recovery.
+
+Hand-produced crops are now named for the figure they contain (`fig-5-8.jpeg`)
+rather than marker's page-index names, so they are distinguishable at a glance.
+
+Worth carrying forward: an extractor that drops one panel from a multi-panel
+page fails by *offset*, not loudly. Every downstream figure inherits the error
+while the build stays green and prose checks stay quiet. Figure-to-caption
+correspondence needs its own assertion.
+
+Still open, each tracked as a GitHub issue so this file and the issue list do
+not drift apart: Chapter 7's displaced equation numbering (#2); three equations
+and six figure captions that silently correct the printed page (#3), all turning
+on whether this edition reproduces the 1993 text as printed or corrects it with
+a note; thirteen page-qualified and multi-year citations MyST cannot express
+(#4); a cited three-author work with no bibliography entry (#5); 70 of 198
+entries uncited (#6); two figures clipped in the source scan itself and
+unrecoverable by any crop (#7); and minor directive-style and
+figure-pair-reference inconsistencies (#8).
 
 ---
 
