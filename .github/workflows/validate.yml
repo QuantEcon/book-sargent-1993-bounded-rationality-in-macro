@@ -1,0 +1,61 @@
+name: Validate conversion
+
+# The deploy workflow only runs on push to main, so until now nothing checked a
+# pull request at all. This gates changes to the converted chapters.
+#
+# Scope note: prose fidelity (scripts/validate_prose.py) cannot run here. It
+# needs the source scan, which is gitignored as a copyrighted 8 MB book, so it
+# stays a local check. Everything below works from the Markdown alone.
+on:
+  pull_request:
+  push:
+    branches:
+      - main # after merge; deploy.yml builds but does not run these checks
+# Deliberately not `branches-ignore: [main]`: a push to a branch that has an
+# open PR fires both events, so every PR run was happening twice.
+
+permissions:
+  contents: read
+
+jobs:
+  structure:
+    name: Structural checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      # scripts/check_structure.py is stdlib-only on purpose: no dependency
+      # install, so this stays a fast gate. `uv sync` would pull marker-pdf
+      # (and torch) for no benefit here.
+      - name: Check footnotes, equations, references, figures, headings
+        run: python scripts/check_structure.py
+
+  build:
+    name: MyST build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+      - name: Install MyST
+        run: npm install -g mystmd
+      - name: Build HTML
+        run: |
+          set -o pipefail
+          myst build --html 2>&1 | tee build.log
+      # `myst build` exits 0 even when it cannot find a referenced image, so a
+      # green build is not on its own evidence of a clean one. Two figures were
+      # missing for months behind a passing build.
+      - name: Fail on build warnings
+        run: |
+          if grep -qE '⛔️|❌' build.log; then
+            echo "::error::myst build emitted warnings"
+            grep -E '⛔️|❌' build.log
+            exit 1
+          fi
+          echo "Build clean — no warnings."
