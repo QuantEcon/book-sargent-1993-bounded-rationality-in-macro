@@ -1,0 +1,253 @@
+# Fidelity Report: Sargent (1993) PDF → MyST Markdown
+
+**Date**: 2026-07-20
+**Scope**: `paper/ch01.md`–`ch07.md`, `paper/references.bib`, `paper/figures/`
+**Source**: `source/Sargent_Bounded Rationality in Macroeconomics_...pdf` (204 pages)
+
+This is the quality assessment called for by Step 4 and the Quality Verification
+Checklist in `PROMPT-PDF-TO-MD.md`. None had been produced for this book: prior
+to this report the only verification on record was `myst build --html`
+succeeding, which establishes that the document *compiles*, not that it *matches
+the original*.
+
+Every defect it found has been fixed. What remains open is listed at the end.
+
+---
+
+## Method
+
+The source PDF is a scan, but it carries an OCR text layer that `pdftotext`
+extracts cleanly (~329k characters). That layer is an independent channel: it
+does not pass through `marker-pdf`, so content marker dropped is still visible
+in it. This matters because the conversion worked from marker's output rather
+than from the PDF, meaning nothing marker lost could be detected anywhere else
+in the pipeline.
+
+`scripts/validate_prose.py` attributes PDF pages to chapters, strips page
+furniture, and measures what fraction of the PDF's 8-grams appear anywhere in
+the corresponding MyST chapter. Coverage is computed over *content words*
+(alphabetic, ≥4 characters) because OCR renders equations as short digit-laden
+fragments; including them made the score track maths density rather than
+fidelity. Matching is order-insensitive, so footnotes moving from page-bottom to
+inline definitions do not register as loss.
+
+**What this method does and does not establish.** It is good evidence about
+prose presence. It says nothing about equation *correctness* — the OCR garbles
+maths — nor about figure content, nor about whether numerals within equations
+are right. Those still require visual comparison against the PDF.
+
+It is also, on its own, blind to *structure*. The citation rewrite initially
+matched across a blank line and collapsed a paragraph into the heading above it
+("## A model of Bray" absorbed the sentence that followed). Coverage barely
+moved, because every word was still present and still in order — presence and
+arrangement are different properties, and an n-gram score only measures the
+first. The regex now refuses to cross a line break, and the validator carries a
+separate structural assertion that flags headings which look like they have
+swallowed body text. Caught in review by GitHub Copilot on PR #1, not by this
+report's own method.
+
+---
+
+## Results
+
+### Prose coverage
+
+| Chapter | PDF words | MyST words | Coverage | Reverse |
+|---|---:|---:|---:|---:|
+| ch01 | 770 | 1,075 | 94.0% | 67.1% |
+| ch02 | 4,896 | 4,891 | 86.8% | 86.9% |
+| ch03 | 2,468 | 2,456 | 79.7% | 80.1% |
+| ch04 | 3,726 | 3,690 | 80.5% | 81.4% |
+| ch05 | 7,067 | 6,966 | 76.3% | 77.7% |
+| ch06 | 2,332 | 2,310 | 77.8% | 78.6% |
+| ch07 | 3,236 | 3,234 | 85.8% | 85.8% |
+| **Total** | **24,495** | **24,622** | **81.3%** | |
+
+Word-count parity is the more legible signal: ch02 4,896 vs 4,891, ch07 3,236 vs
+3,234. A dropped paragraph would leave MyST short by its length. ch01 runs long
+because `ch01.md` also holds front matter (dedication, Arne Ryde Foundation,
+acknowledgements) that sits outside the chapter's page range.
+
+The residual ~19% is not missing text. All flagged prose gaps were examined
+individually; the causes are text embedded *inside* figure images (OCR reads
+axis labels and annotations that legitimately have no prose counterpart), OCR
+damage to figure captions (`igure` for `Figure`), and maths fragments long
+enough to survive the content-word filter. Two gaps were real content loss and
+have been fixed.
+
+### Counts
+
+| Item | Count | Note |
+|---|---:|---|
+| Labelled equations | 117 | every number 1..max labelled in each chapter |
+| Figure labels | 47 | all image references resolve |
+| Footnote definitions | 160 | sequential `fn1`–`fn160`, every marker paired |
+| Citations linked | 188 | was 0 before this pass |
+| Distinct bib keys cited | 128 | of 198 entries |
+
+---
+
+## Defects found and fixed
+
+### 1. Bibliography entirely orphaned — FIXED
+
+All 187 author-year references were plain prose, so the 198-entry bibliography
+was unreachable and never rendered. `scripts/link_citations.py` now links them
+(188 after the footnote restoration below). Matching is self-validating: keys
+are surnames concatenated with the year, so a candidate is accepted only when
+the key it implies actually exists.
+
+**Known cost of this fix.** MyST renders `{cite:t}` as "Evans & Honkapohja
+(1992)" — it substitutes "&" for the book's "and", and it does not apply
+disambiguation letters, so `1992a`, `1992b` and `1992c` all render as "(1992)"
+and become indistinguishable in the text. mystmd 1.10 exposes no citation-style
+configuration to change this. This was accepted deliberately, trading exact
+typographic fidelity for a working bibliography.
+
+Possessive forms use `{cite:year}` instead, which renders only "(1961)" and
+leaves the name in prose, so "Muth's (1961)" survives intact.
+
+### 2. Two footnotes dropped — FIXED
+
+Both were located by the prose validator and confirmed against the page scans.
+
+**Chapter 4, book footnote 11** (PDF p. 67), attached to "…contain an example of
+what is hoped for." Restored as `fn60`:
+
+> Out of fear of getting stuck at an inferior local rest point, econometricians
+> who estimate nonlinear models have the habit of trying a variety of starting
+> values for their hill-climbing algorithms. Simulated annealing is inspired by
+> the same fear, and amounts to a systematic way of choosing a set of starting
+> values, and of perturbing directions and step sizes.
+
+**Chapter 5, book footnote 17** (PDF p. 108), attached to "…render the exchange
+rate and all other endogenous variables determinate." Restored as `fn89`:
+
+> See Calvo (1988) and Evans, Honkapohja, and Sargent (1993) for setups in which
+> a fraction 1 − μ of agents is rational, and a fraction μ is 'adaptive' in
+> particular senses. Both of these contributions are concerned with studying how
+> dynamics might differ from the rational expectations dynamics even with a very
+> small μ.
+
+`Calvo1988` had been sitting in `references.bib` uncited as a direct
+consequence, and is now linked.
+
+Restoring these took the book from 158 to 160 footnotes.
+`scripts/renumber_footnotes.py` reassigned labels sequentially in document
+order, so the `fn1`–`fn160` convention still holds. It refuses to run unless
+every marker pairs with a definition in the same file.
+
+### 3. Five equations present but unlabelled — FIXED
+
+Equations 3.7, 3.12, 5.26, 5.37 and 5.38 are printed in the book and their maths
+*was* present in the MyST, but none carried an `(eq-N-M)` label, so nothing
+could cross-reference them. Labels added; every chapter now has a complete
+1..max sequence.
+
+This had already caused two prose regressions, both now repaired:
+
+- `ch05.md` read "when agents forecast according to the rule and when the
+  $\theta$'s are updated according to {eq}`eq-5-39`" — the book reads "according
+  to the rule (38)". The reference had been dropped with the label.
+- `ch05.md` read "The effect of this will be to replace {eq}`eq-5-21` with an
+  equilibrium condition of the form" where the book reads "replace (26)".
+  `eq-5-21` is a *different* equation; with (26) unlabelled the conversion had
+  pointed at the nearest available label. Corrected to `eq-5-26`.
+
+Note that equation 5.37 is a two-line system in the book carrying a single
+number. It is labelled on the first block with the companion left unlabelled,
+matching how `eq-5-39` was already handled.
+
+### 4. Two figure images missing — FIXED
+
+`figures/_page_63_Figure_4.jpeg` (fig-3-2) and `figures/_page_81_Figure_3.jpeg`
+(fig-4-4b) were referenced but had never existed. Both pages carry two
+side-by-side figures; marker's metadata shows it detected 3 captions but only
+1 figure block on PDF p. 64, and 2 captions but 1 figure block on p. 82, so it
+segmented only the left-hand figure of each pair.
+
+The pages are full-page scans with no separately embedded images, so the
+figures were recovered by rendering each page at 300 dpi with `pdftoppm` and
+cropping to match marker's framing (plot area with axis labels, no caption).
+
+`myst build --html` now completes with **zero warnings**.
+
+---
+
+## Verified sound
+
+- No dropped prose remains, across all seven chapters.
+- All 160 footnote markers resolve to a definition; no orphans in either
+  direction; labels are sequential with no gaps.
+- Every equation number from 1 to the chapter maximum carries a label.
+- All figure references resolve to files on disk.
+- `myst build --html` completes with no errors and no warnings.
+- All 188 citation roles resolve in the built output — zero cite errors — and
+  the bibliography renders.
+- No dangling `{eq}` cross-references.
+- No heading has absorbed body text; all section anchors resolve.
+
+---
+
+## Still open
+
+**Thirteen citations remain unlinked** — page-qualified and multi-year forms,
+which MyST has no locator syntax for: `Hurwicz (1946, p. 133)`, `Sargent (1987,
+ch. XIII)`, `Barsalou (1992, p. 9)`, `Friedman and Schwartz (1963, pp. 156–68)`,
+`Lucas (1981, pp. 221, 283)`, `Ljung, Pflug, and Walk (1992, pp. 99–100)`,
+`Hansen and Sargent (1980, 1981)`, `Evans (1985, 1989)`, `Judd (1990, 1992)`,
+`Chen and White (1992, 1993)`, `Marcet and Sargent (1989a, 1989b)` (×2), and
+`Marcet and Sargent (1989a, 1989b, 1992)`.
+
+**One citation is disambiguated by inference.** `ch05.md` fn94 cites "Evans and
+Honkapohja (1993)" with no letter, though the book uses "(1993b)" elsewhere. The
+ambiguity is in the original, not the conversion. Linked to
+`EvansHonkapohja1993b`: the footnote describes "path dependence", and 1993b is
+*Adaptive Forecasts, Hysteresis and Endogenous Fluctuations*. Recorded in
+`OVERRIDES` in `scripts/link_citations.py`. Worth confirming against the printed
+reference list.
+
+**A three-author work may be missing from the bibliography.** The restored ch05
+footnote cites "Evans, Honkapohja, and Sargent (1993)", for which there is no
+entry; the bibliography has `EvansSargent1993` (two authors) and
+`EvansHonkapohja1993a`/`b`. That citation is left as plain text pending a check
+of the printed reference list.
+
+**70 of 198 bibliography entries are uncited.** Expected in part — a book's
+reference list carries works not cited inline — but large enough to be worth a
+pass, since some may be citations the scanner's patterns miss.
+
+**Figure directives are stylistically inconsistent**: ch02–ch04 use `:label:`,
+ch05–ch07 use `:name:`. Both are valid MyST and both resolve; harmonising is
+cosmetic.
+
+**Equation correctness and figure content remain unverified.** This is the
+substantive gap. The OCR layer garbles maths and cannot see inside images, so no
+automated check reaches either. Confirming them requires reading the PDF against
+the rendered HTML.
+
+---
+
+## Reproducing
+
+```bash
+uv run python scripts/validate_prose.py       # prose fidelity vs the PDF
+uv run python scripts/link_citations.py       # citation linkage
+uv run python scripts/renumber_footnotes.py   # footnote label sequence
+```
+
+All three are deterministic and default to reporting only; the latter two write
+only with `--apply`.
+
+---
+
+## Assessment against the checklist
+
+`PROMPT-PDF-TO-MD.md` sets a target of ≥90% fidelity. On prose the conversion is
+sound: two dropped footnotes were the only content loss found in ~24,500 words,
+and word-count parity holds to within a fraction of a percent per chapter. All
+structural defects found — orphaned bibliography, missing equation labels,
+missing figures — are now closed, and the build is warning-free.
+
+The checklist items that remain genuinely unverified are the ones this method
+cannot reach: equation correctness and figure content.
