@@ -74,18 +74,18 @@ content — e.g. it claimed `fn1–fn25` for ch02, which really holds 32 footnot
 |---------|------|------:|------:|------:|------:|------:|
 | Front matter + Ch 1: Introduction | `ch01.md` | 66 | 0 | 0 | 2 | 10 |
 | Ch 2: Expectations and Behavior | `ch02.md` | 457 | 18 | 2 | 32 | 30 |
-| Ch 3: Data Structures | `ch03.md` | 431 | 17 | 2 | 15 | 27 |
-| Ch 4: Networks and AI | `ch04.md` | 540 | 14 | 7 | 22 | 18 |
-| Ch 5: Adaptation in Artificial Economies | `ch05.md` | 1,120 | 43 | 18 | 46 | 60 |
+| Ch 3: Data Structures | `ch03.md` | 431 | 19 | 2 | 15 | 27 |
+| Ch 4: Networks and AI | `ch04.md` | 542 | 14 | 7 | 23 | 18 |
+| Ch 5: Adaptation in Artificial Economies | `ch05.md` | 1,122 | 46 | 18 | 47 | 61 |
 | Ch 6: Experiments | `ch06.md` | 291 | 10 | 15 | 18 | 17 |
 | Ch 7: Applications | `ch07.md` | 262 | 10 | 3 | 23 | 25 |
-| **Total** | | **3,167** | **112** | **47** | **158** | **187** |
+| **Total** | | **3,171** | **117** | **47** | **160** | **188** |
 | References | `references.bib` | 1,660 | — | — | — | 198 entries |
 | Indexes | — | — | — | — | — | Omitted; MyST generates navigation |
 
-Known gaps against the original, all detailed in the fidelity report: two
-footnotes dropped (ch04, ch05), five equations present but unlabelled (3.7,
-3.12, 5.26, 5.37, 5.38), and two figure images never extracted.
+Every equation number from 1 to each chapter's maximum now carries a label,
+every footnote marker pairs with a definition (`fn1`–`fn160`, no gaps), and
+every figure reference resolves to a file. `myst build --html` is warning-free.
 
 ### MyST Conventions Used
 
@@ -158,20 +158,29 @@ than from the PDF.
 - `scripts/link_citations.py` — links plain-text author-year references to
   `references.bib`.
 
+- `scripts/renumber_footnotes.py` — keeps footnote labels sequential in
+  document order after an insertion.
+
 Found and fixed:
 
 - **Bibliography was entirely orphaned.** All 187 citations were plain prose, so
   the 198-entry bibliography never rendered. Now linked. Cost: MyST renders
   `{cite:t}` with "&" rather than "and" and drops a/b/c disambiguation letters;
   mystmd 1.10 has no setting for this. Accepted deliberately.
+- **Two footnotes dropped entirely** — book fn11 in ch04 and fn17 in ch05, the
+  only prose loss found. Restored; the book has 160 footnotes, not 158.
+- **Five equations present but unlabelled** (3.7, 3.12, 5.26, 5.37, 5.38).
+  Labelled. This had also produced two bad cross-references in ch05, including
+  one pointing at the wrong equation (`eq-5-21` where the book says (26)).
+- **Two figure images never extracted.** Recovered by rendering the pages at
+  300 dpi and cropping; marker had segmented only the left figure of each
+  side-by-side pair. The build is now warning-free.
 
-Found and still open:
+Still open:
 
-- Two footnotes dropped entirely (ch04, ch05) — the only prose loss found.
-- Five equations present but unlabelled (3.7, 3.12, 5.26, 5.37, 5.38), which
-  also cost one prose cross-reference in ch05.
-- Two figure images never extracted (previously known).
 - Thirteen page-qualified/multi-year citations MyST cannot express.
+- "Evans, Honkapohja, and Sargent (1993)" has no bibliography entry.
+- 70 of 198 bibliography entries uncited.
 
 Not covered by this method: equation correctness and figure content. The OCR
 layer garbles maths and cannot see inside images, so those still need visual
