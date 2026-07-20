@@ -36,6 +36,16 @@ prose presence. It says nothing about equation *correctness* — the OCR garbles
 maths — nor about figure content, nor about whether numerals within equations
 are right. Those still require visual comparison against the PDF.
 
+It is also, on its own, blind to *structure*. The citation rewrite initially
+matched across a blank line and collapsed a paragraph into the heading above it
+("## A model of Bray" absorbed the sentence that followed). Coverage barely
+moved, because every word was still present and still in order — presence and
+arrangement are different properties, and an n-gram score only measures the
+first. The regex now refuses to cross a line break, and the validator carries a
+separate structural assertion that flags headings which look like they have
+swallowed body text. Caught in review by GitHub Copilot on PR #1, not by this
+report's own method.
+
 ---
 
 ## Results
@@ -44,14 +54,14 @@ are right. Those still require visual comparison against the PDF.
 
 | Chapter | PDF words | MyST words | Coverage | Reverse |
 |---|---:|---:|---:|---:|
-| ch01 | 770 | 1,075 | 93.2% | 66.6% |
-| ch02 | 4,896 | 4,891 | 86.7% | 86.8% |
+| ch01 | 770 | 1,075 | 94.0% | 67.1% |
+| ch02 | 4,896 | 4,891 | 86.8% | 86.9% |
 | ch03 | 2,468 | 2,456 | 79.7% | 80.1% |
-| ch04 | 3,726 | 3,690 | 80.5% | 81.3% |
-| ch05 | 7,073 | 6,966 | 76.0% | 77.5% |
-| ch06 | 2,332 | 2,310 | 77.8% | 78.5% |
-| ch07 | 3,236 | 3,234 | 85.7% | 85.7% |
-| **Total** | **24,501** | **24,622** | **81.2%** | |
+| ch04 | 3,726 | 3,690 | 80.5% | 81.4% |
+| ch05 | 7,067 | 6,966 | 76.3% | 77.7% |
+| ch06 | 2,332 | 2,310 | 77.8% | 78.6% |
+| ch07 | 3,236 | 3,234 | 85.8% | 85.8% |
+| **Total** | **24,495** | **24,622** | **81.3%** | |
 
 Word-count parity is the more legible signal: ch02 4,896 vs 4,891, ch07 3,236 vs
 3,234. A dropped paragraph would leave MyST short by its length. ch01 runs long
@@ -175,6 +185,7 @@ cropping to match marker's framing (plot area with axis labels, no caption).
 - All 188 citation roles resolve in the built output — zero cite errors — and
   the bibliography renders.
 - No dangling `{eq}` cross-references.
+- No heading has absorbed body text; all section anchors resolve.
 
 ---
 

@@ -175,6 +175,23 @@ def myst_headings(md: str) -> set[str]:
     return {_norm(m) for m in re.findall(r"^#{1,6}\s+(.+)$", md, flags=re.M)}
 
 
+def suspicious_headings(md: str) -> list[str]:
+    """Headings that look like they have absorbed body text.
+
+    Coverage alone cannot catch this: when a paragraph is merged into the
+    heading above it, every word is still present and still in order, so the
+    n-gram score barely moves. A citation rewrite once did exactly that, and
+    the prose check saw nothing. Structure needs its own assertion.
+    """
+    out = []
+    for h in re.findall(r"^#{1,6}[^\S\n]+(.+)$", md, flags=re.M):
+        # The period must end a word, not a section number: "6. Experiments" is
+        # a heading, "…equilibrium. These features" is a swallowed sentence.
+        if len(h) > 90 or re.search(r"[a-z]\.\s+[A-Z]", h) or "{cite" in h:
+            out.append(h)
+    return out
+
+
 def looks_like_maths(text: str) -> bool:
     """Heuristic: is an uncovered run OCR'd maths rather than dropped prose?
 
@@ -190,10 +207,25 @@ def looks_like_maths(text: str) -> bool:
     return (short + digits) / len(toks) > 0.45
 
 
+# Surname particles that carry a capital in a cite key and must stay attached to
+# what follows: MarimonMcGrattan1993 -> "Marimon McGrattan", not "Marimon Mc
+# Grattan". Split apart, "Mc" falls below the content-word threshold and is
+# dropped, while the PDF has "McGrattan" whole -- so the n-gram chain breaks and
+# the citation reads as a prose gap that is not there.
+_PARTICLES = ("Mc", "Mac", "De", "Del", "Della", "La", "Le", "Van", "Von", "El", "O")
+
+
 def _surnames(key: str) -> str:
     """Recover author surnames from a cite key ("MarcetSargent1989a")."""
     stem = re.sub(r"\d{4}[a-z]?$", "", key)
-    return " " + " ".join(re.findall(r"[A-ZÀ-Þ][a-zà-ÿ]*", stem)) + " "
+    parts = re.findall(r"[A-ZÀ-Þ][a-zà-ÿ]*", stem)
+    merged: list[str] = []
+    for part in parts:
+        if merged and merged[-1] in _PARTICLES:
+            merged[-1] += part
+        else:
+            merged.append(part)
+    return " " + " ".join(merged) + " "
 
 
 def clean_myst_text(md: str) -> str:
@@ -349,9 +381,9 @@ def main() -> int:
         md = md_path.read_text(encoding="utf-8")
         pdf_text = clean_pdf_text(by_chapter[chapter], myst_headings(md))
         myst_text = clean_myst_text(md)
-        results.append(
-            analyse(chapter, pdf_text, myst_text, args.n, args.min_run, content_words)
-        )
+        r = analyse(chapter, pdf_text, myst_text, args.n, args.min_run, content_words)
+        r["bad_headings"] = suspicious_headings(md)
+        results.append(r)
 
     mode = "raw tokens" if args.raw_tokens else "content words"
     print(f"\nProse fidelity — {args.n}-gram coverage ({mode}), PDF text layer vs MyST\n")
@@ -379,6 +411,14 @@ def main() -> int:
         f"{'TOTAL':<9}{tot_pdf:>11,}{tot_myst:>12,}{weighted:>10.1%}"
         f"{'':>10}{tot_prose:>12}{tot_maths:>12}"
     )
+
+    flagged = [(r["chapter"], h) for r in results for h in r["bad_headings"]]
+    print("\nStructure — headings that may have absorbed body text:")
+    if flagged:
+        for chapter, h in flagged:
+            print(f"  {chapter}: {h[:120]}")
+    else:
+        print("  none")
 
     print(f"\nProse gaps needing review (runs of >= {args.min_run} uncovered n-grams,")
     print("excluding runs classified as garbled equation OCR):\n")

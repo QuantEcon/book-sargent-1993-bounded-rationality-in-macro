@@ -35,10 +35,17 @@ BIB = PAPER / "references.bib"
 # reach past ASCII.
 _NAME = r"[A-ZÀ-Þ][A-Za-zÀ-ÿ'’.-]*"
 
+# Horizontal whitespace only. Using `\s` here lets a match run across a line
+# break, which once swallowed a whole paragraph into the heading above it:
+# "## A model of Bray\n\nMargaret Bray (1982)" matched end to end and collapsed
+# to one line. Chapter paragraphs are unwrapped, so every real citation sits on
+# a single line and nothing is lost by refusing to cross one.
+_H = r"[^\S\n]"
+
 # "Marcet and Sargent (1989a)", "Rust, Palmer, and Miller (1992)", "Sims (1980)"
 CITE_RE = re.compile(
-    rf"(?P<names>{_NAME}(?:(?:,)?\s+(?:and\s+|&\s+)?{_NAME})*)"
-    r"(?P<gap>\s+)"
+    rf"(?P<names>{_NAME}(?:(?:,)?{_H}+(?:and{_H}+|&{_H}+)?{_NAME})*)"
+    rf"(?P<gap>{_H}+)"
     r"\((?P<year>\d{4}[a-z]?)\)"
 )
 
