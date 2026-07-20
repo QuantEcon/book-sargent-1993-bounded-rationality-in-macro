@@ -383,10 +383,12 @@ now been checked against the source.
 
 **Prose** is sound: two dropped footnotes were the only content loss in ~24,500
 words, and word-count parity holds to within a fraction of a percent per
-chapter. **Equations** are sound: 117 of 117 verified against the page scans,
-with two conversion errors and three deliberate-looking corrections outstanding.
-**Structure** is clean — bibliography linked, every equation labelled, every
-reference resolving, build warning-free.
+chapter. **Equations** are sound: all 117 were verified against the page scans,
+and the three defects found — eq-7-1's η, eq-4-14's dropped companion display,
+and Chapter 7's displaced numbering — are fixed. Three deliberate-looking
+corrections of the printed text remain, as decisions rather than defects.
+**Structure** is clean: bibliography linked, every equation labelled and
+numbered as the book numbers it, every reference resolving, build warning-free.
 
 **Figures were the weak point**, and not where the prose work pointed. Sixteen
 problems in 47 figures, including a shift that silently mis-captioned four plots
