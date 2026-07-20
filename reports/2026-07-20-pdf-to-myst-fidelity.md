@@ -33,8 +33,8 @@ inline definitions do not register as loss.
 
 **What this method does and does not establish.** It is good evidence about
 prose presence. It says nothing about equation *correctness* — the OCR garbles
-maths — nor about figure content, nor about whether numerals within equations
-are right. Those still require visual comparison against the PDF.
+maths — nor about figure content. Those were closed separately by a visual
+audit; see "Equation and figure audit" below.
 
 It is also, on its own, blind to *structure*. The citation rewrite initially
 matched across a blank line and collapsed a paragraph into the heading above it
@@ -174,6 +174,78 @@ cropping to match marker's framing (plot area with axis labels, no caption).
 
 ---
 
+## Equation and figure audit
+
+The OCR layer cannot reach maths or images, so these were checked by rendering
+each relevant page at 300 dpi and reading it against the source. Every equation
+discrepancy was then attacked by three independent refuters (transcription,
+mathematics, scan-legibility) with majority-refute dropping the claim; every
+re-crop was confirmed by a second agent working from a fresh render.
+
+**Equations: 117 of 117 checked, and they are sound.** Six discrepancies were
+raised, one was refuted, five survived. Only two are conversion errors:
+
+- **eq-7-1** (ch07) — the book prints η; the MyST has Latin `n`. The
+  surrounding prose repeats it, so it is consistent but wrong, and it breaks the
+  link to the η used in eq-7-3 and eq-7-7. **Open.**
+- **eq-4-14** (ch04) — the book gives two displays joined by "or"; the MyST
+  dropped the unnumbered gradient form
+  `v_{i,t+1} = tanh(−(∂C/∂v_it)/T)`, removing the derivation link between the
+  cost function and the update rule. **Open.**
+
+Three more are places where the MyST silently *corrects* the printed page, which
+against an exact-replication mandate is an editorial decision rather than a
+defect. All three are **open**:
+
+| | Book prints | MyST has | Note |
+|---|---|---|---|
+| eq-4-3 | `g(x) − θ₀ + Σ` | `− Σ` | MyST is mathematically right; the book's `+` looks like a typesetting error |
+| eq-5-13 | `Nf(G_{t+1})` | `Nf(G_t)` | MyST matches the derivation, but ch05.md line 461 still reproduces the printed form, so the file contradicts itself |
+| eq-2-14 | tag on the 1st display | tag on the 2nd | cosmetic; eq-2-15 and eq-2-18 follow the print, so eq-2-14 is the odd one out |
+
+**Figures: 47 checked, 16 problems.** The figures were in materially worse shape
+than the equations — the reverse of what the prose-coverage work suggested.
+
+---
+
+## Defects found and fixed (figures)
+
+### 5. A one-position figure shift through ch05 — FIXED
+
+`marker-pdf` extracted only three of the four panels on PDF p. 125, missing
+printed Figure 8. Every subsequent directive then took the next image along, so
+four figures displayed the wrong plot and two printed figures appeared nowhere:
+
+| Directive | Was showing | Now shows |
+|---|---|---|
+| fig-5-8 | printed Fig 9a | printed Fig 8 (newly cropped) |
+| fig-5-9a | printed Fig 9b | printed Fig 9a |
+| fig-5-9b | printed Fig 10a | printed Fig 9b |
+| fig-5-10a | printed Fig 10b | printed Fig 10a |
+| *(absent)* | — | fig-5-10b, printed Fig 10b |
+
+A reader of fig-5-8 was being shown a saving-rate curve captioned as a
+logarithm of the exchange rate. The captions were all correct throughout; only
+the image paths were displaced, so the fix was a re-pointing plus one new crop.
+
+### 6. Other figure defects — FIXED
+
+- **fig-6-5e** reused fig-6-5d's image file outright; printed Figure 5e had
+  never been extracted. Now cropped and pointed at its own file.
+- **fig-4-4a** and **fig-6-4b** were crops containing *both* side-by-side
+  panels, so each chapter rendered its neighbour twice. Re-cropped to one panel.
+- **fig-6-6c** was vertically misaligned: caption text from Figure 6a bled in at
+  the top and the x-axis with all its tick labels was cut off the bottom.
+- **fig-3-2** clipped its final x tick label to "2" instead of "25" — an error
+  in the hand-recovery recorded earlier in this report, not in marker's output.
+
+Hand-produced crops are now named for the figure they contain (`fig-5-8.jpeg`)
+rather than carrying marker's page-index names, so they are distinguishable from
+automated extractions at a glance. Four superseded files were removed; the three
+that were marker originals remain in `_archive/marker_output/`.
+
+---
+
 ## Verified sound
 
 - No dropped prose remains, across all seven chapters.
@@ -221,10 +293,26 @@ pass, since some may be citations the scanner's patterns miss.
 ch05–ch07 use `:name:`. Both are valid MyST and both resolve; harmonising is
 cosmetic.
 
-**Equation correctness and figure content remain unverified.** This is the
-substantive gap. The OCR layer garbles maths and cannot see inside images, so no
-automated check reaches either. Confirming them requires reading the PDF against
-the rendered HTML.
+**Five equation items await an editorial decision**, listed under "Equation and
+figure audit" above: two conversion errors (eq-7-1's η transcribed as `n`,
+eq-4-14's dropped companion display) and three places where the MyST silently
+corrects the printed page (eq-4-3, eq-5-13, eq-2-14). The last three turn on
+whether this edition reproduces the book as printed or corrects it with a note.
+
+**Six figure caption mismatches are unfixed**, each needing the same
+reproduce-or-correct call: fig-3-1 ("eighth-order" where the book prints
+"eight-order"), fig-4-5a/4-5b (`tanh(z/T)` where the book and the surrounding
+MyST both use `x`), fig-5-6 (subscript `t` for the printed `i`, and a dropped
+bar), fig-6-4a (swaps which symbol carries the value 10), and fig-7-2b (an em
+dash the print does not have).
+
+Two further figures are clipped **in the source scan itself** — fig-5-12b's
+final x tick and fig-7-2a's y-axis signs — and no crop can recover them.
+
+Prose references to figure *pairs* resolve to the first panel: the book writes
+"Figure 9 shows saving rates for the two types of agents", which renders as
+"Figure 9a shows…" though the pair spans 9a and 9b. MyST needs a single target,
+so this is a defensible convention rather than an error, but it is a deviation.
 
 ---
 
@@ -243,11 +331,24 @@ only with `--apply`.
 
 ## Assessment against the checklist
 
-`PROMPT-PDF-TO-MD.md` sets a target of ≥90% fidelity. On prose the conversion is
-sound: two dropped footnotes were the only content loss found in ~24,500 words,
-and word-count parity holds to within a fraction of a percent per chapter. All
-structural defects found — orphaned bibliography, missing equation labels,
-missing figures — are now closed, and the build is warning-free.
+`PROMPT-PDF-TO-MD.md` sets a target of ≥90% fidelity. Every checklist area has
+now been checked against the source.
 
-The checklist items that remain genuinely unverified are the ones this method
-cannot reach: equation correctness and figure content.
+**Prose** is sound: two dropped footnotes were the only content loss in ~24,500
+words, and word-count parity holds to within a fraction of a percent per
+chapter. **Equations** are sound: 117 of 117 verified against the page scans,
+with two conversion errors and three deliberate-looking corrections outstanding.
+**Structure** is clean — bibliography linked, every equation labelled, every
+reference resolving, build warning-free.
+
+**Figures were the weak point**, and not where the prose work pointed. Sixteen
+problems in 47 figures, including a shift that silently mis-captioned four plots
+in ch05 and hid two others entirely. The lesson generalises past this book: an
+automated extractor that drops one panel from a multi-panel page does not fail
+loudly, it fails by *offset*, and every downstream figure inherits the error
+while the build stays green and the prose checks stay quiet. Figure-to-caption
+correspondence needs its own assertion; nothing else catches it.
+
+What remains is a set of editorial decisions rather than unverified surface —
+listed under "Still open" — turning mostly on one question: does this edition
+reproduce the 1993 text as printed, or correct it with a note?
