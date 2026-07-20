@@ -15,7 +15,8 @@ Each check is binary and has caught a real defect at least once:
                were printed in the book but carried no label, so nothing could
                cross-reference them, and one reference then pointed at the wrong
                equation.
-  references   every {eq}/{numref} target and every cite key actually exists.
+  references   every {eq}, {numref} and {ref} target resolves to a defined label,
+               and every cite key exists in the bibliography.
   figures      every referenced image is on disk. Two were referenced for months
                without existing.
   headings     no heading looks like it has swallowed body text. A citation
@@ -81,7 +82,10 @@ def check_footnotes(rep: Report) -> None:
             bad = True
             rep.fail("footnotes", f"label sequence has gaps: {gaps}")
     if not bad:
-        rep.ok("footnotes", f"{len(numbers)} footnotes, fn1..fn{max(numbers)}, all paired")
+        # Guard the empty case: with no numeric labels anywhere, max() would
+        # raise and the run would die on a traceback instead of reporting.
+        span = f", fn1..fn{max(numbers)}" if numbers else ""
+        rep.ok("footnotes", f"{len(numbers)} footnotes{span}, all paired")
 
 
 def check_equations(rep: Report) -> tuple[set[str], set[str]]:
@@ -120,6 +124,22 @@ def check_references(rep: Report, eq_defined: set[str], eq_referenced: set[str])
         rep.fail("references", f"{{eq}} targets with no definition: {dangling}")
     else:
         rep.ok("references", f"{len(eq_referenced)} {{eq}} refs all resolve")
+
+    # {numref} and {ref} point at directive labels and section targets. These
+    # are mostly figure references, so this is the check that guards against a
+    # caption pointing somewhere that no longer exists.
+    targets: set[str] = set()
+    labelled: set[str] = set()
+    for md in CHAPTERS:
+        text = md.read_text(encoding="utf-8")
+        targets |= set(re.findall(r"\{(?:numref|ref)\}`([^`]+)`", text))
+        labelled |= set(re.findall(r"^:(?:label|name):\s*(\S+)", text, re.M))
+        labelled |= set(re.findall(r"^\(([A-Za-z0-9_-]+)\)=", text, re.M))
+    unresolved = sorted(targets - labelled)
+    if unresolved:
+        rep.fail("references", f"{{numref}}/{{ref}} targets with no label: {unresolved}")
+    else:
+        rep.ok("references", f"{len(targets)} {{numref}}/{{ref}} targets all resolve")
 
     keys = set(re.findall(r"^@\w+\{([^,]+),", BIB.read_text(encoding="utf-8"), re.M))
     used: set[str] = set()
