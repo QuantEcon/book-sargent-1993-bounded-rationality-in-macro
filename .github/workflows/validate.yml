@@ -9,8 +9,10 @@ name: Validate conversion
 on:
   pull_request:
   push:
-    branches-ignore:
-      - main # main is covered by the deploy workflow
+    branches:
+      - main # after merge; deploy.yml builds but does not run these checks
+# Deliberately not `branches-ignore: [main]`: a push to a branch that has an
+# open PR fires both events, so every PR run was happening twice.
 
 permissions:
   contents: read
