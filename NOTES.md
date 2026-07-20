@@ -65,17 +65,27 @@ Converting the 204-page book from PDF to high-fidelity MyST Markdown, following 
 
 ### Conversion Progress
 
-| Chapter | File | Status | Lines | Details |
-|---------|------|--------|-------|---------|
-| Front matter + Ch 1: Introduction | `ch01.md` | ✅ Complete | 72 | Dedication, Arne Ryde Foundation, Acknowledgements, Introduction |
-| Ch 2: Expectations and Behavior | `ch02.md` | ✅ Complete | 457 | eq-2-1 to eq-2-18, fig-2-1/2-2, fn1–fn25 |
-| Ch 3: Data Structures | `ch03.md` | ✅ Complete | 431 | eq-3-1 to eq-3-19, fig-3-1/3-2, fn26–fn52 |
-| Ch 4: Networks and AI | `ch04.md` | ✅ Complete | 540 | eq-4-1 to eq-4-14, fig-4-1 to fig-4-5b, fn53–fn71 |
-| Ch 5: Adaptation in Artificial Economies | `ch05.md` | ✅ Complete | 1,122 | eq-5-1 to eq-5-44, fig-5-1 to fig-5-13b, fn72–fn117 |
-| Ch 6: Experiments | `ch06.md` | ✅ Complete | 291 | eq-6-1 to eq-6-9, fig-6-1 to fig-6-7, fn118–fn135 |
-| Ch 7: Applications | `ch07.md` | ✅ Complete | 262 | eq-7-1 to eq-7-10, fig-7-1 to fig-7-2b, fn136–fn158 |
-| References | `references.bib` | ✅ Complete | 1,660 | 198 BibTeX entries |
-| Indexes | — | Omitted | — | Not needed — MyST auto-generates navigation |
+Counts below are **measured** from the files (see
+`reports/2026-07-20-pdf-to-myst-fidelity.md`), not estimated. An earlier version
+of this table was written from the conversion plan and disagreed with the actual
+content — e.g. it claimed `fn1–fn25` for ch02, which really holds 32 footnotes.
+
+| Chapter | File | Lines | Labelled eqs | Figure labels | Footnotes | Citations |
+|---------|------|------:|------:|------:|------:|------:|
+| Front matter + Ch 1: Introduction | `ch01.md` | 66 | 0 | 0 | 2 | 10 |
+| Ch 2: Expectations and Behavior | `ch02.md` | 457 | 18 | 2 | 32 | 30 |
+| Ch 3: Data Structures | `ch03.md` | 431 | 17 | 2 | 15 | 27 |
+| Ch 4: Networks and AI | `ch04.md` | 540 | 14 | 7 | 22 | 18 |
+| Ch 5: Adaptation in Artificial Economies | `ch05.md` | 1,120 | 43 | 18 | 46 | 60 |
+| Ch 6: Experiments | `ch06.md` | 291 | 10 | 15 | 18 | 17 |
+| Ch 7: Applications | `ch07.md` | 262 | 10 | 3 | 23 | 25 |
+| **Total** | | **3,167** | **112** | **47** | **158** | **187** |
+| References | `references.bib` | 1,660 | — | — | — | 198 entries |
+| Indexes | — | — | — | — | — | Omitted; MyST generates navigation |
+
+Known gaps against the original, all detailed in the fidelity report: two
+footnotes dropped (ch04, ch05), five equations present but unlabelled (3.7,
+3.12, 5.26, 5.37, 5.38), and two figure images never extracted.
 
 ### MyST Conventions Used
 
@@ -100,6 +110,9 @@ Converting the 204-page book from PDF to high-fidelity MyST Markdown, following 
 ---
 
 ## Step 5: Build & Verify
+
+Note: this step establishes only that the document *compiles*. It is not a
+fidelity check. For verification against the source PDF see Step 7.
 
 - **Date**: 2026-04-09
 - `myst build --html` — all 8 pages build successfully
@@ -128,6 +141,44 @@ These two images need to be manually extracted from the source PDF.
 
 ---
 
+## Step 7: Validation Against the Source PDF
+
+- **Date**: 2026-07-20
+- Report: `reports/2026-07-20-pdf-to-myst-fidelity.md`
+
+The source PDF is a scan but carries an OCR text layer that `pdftotext` reads
+cleanly. That gives an independent check on the conversion, because it does not
+pass through `marker-pdf` — anything marker dropped is invisible to every other
+step of the pipeline, since the conversion worked from marker's output rather
+than from the PDF.
+
+- `scripts/validate_prose.py` — n-gram coverage of PDF text vs each MyST
+  chapter. Result: 81.0% content-word coverage, with word-count parity per
+  chapter. Every flagged gap was reviewed; two turned out to be real.
+- `scripts/link_citations.py` — links plain-text author-year references to
+  `references.bib`.
+
+Found and fixed:
+
+- **Bibliography was entirely orphaned.** All 187 citations were plain prose, so
+  the 198-entry bibliography never rendered. Now linked. Cost: MyST renders
+  `{cite:t}` with "&" rather than "and" and drops a/b/c disambiguation letters;
+  mystmd 1.10 has no setting for this. Accepted deliberately.
+
+Found and still open:
+
+- Two footnotes dropped entirely (ch04, ch05) — the only prose loss found.
+- Five equations present but unlabelled (3.7, 3.12, 5.26, 5.37, 5.38), which
+  also cost one prose cross-reference in ch05.
+- Two figure images never extracted (previously known).
+- Thirteen page-qualified/multi-year citations MyST cannot express.
+
+Not covered by this method: equation correctness and figure content. The OCR
+layer garbles maths and cannot see inside images, so those still need visual
+comparison against the PDF.
+
+---
+
 ## File Inventory
 
 | Path | Description |
@@ -144,6 +195,9 @@ These two images need to be manually extracted from the source PDF.
 | `paper/references.bib` | 198 BibTeX entries |
 | `paper/figures/` | 51 JPEG images from marker extraction |
 | `paper/_paper_combined.md` | Archived original combined file |
+| `scripts/validate_prose.py` | Prose fidelity check against the PDF text layer |
+| `scripts/link_citations.py` | Links author-year references to `references.bib` |
+| `reports/` | Fidelity reports |
 | `.github/workflows/deploy.yml` | GitHub Pages deployment workflow |
 | `source/` | Original PDF |
 | `_archive/marker_output/` | Raw marker-pdf extraction output |
