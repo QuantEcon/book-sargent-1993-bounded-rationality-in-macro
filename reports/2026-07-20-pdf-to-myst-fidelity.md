@@ -10,10 +10,10 @@ to this report the only verification on record was `myst build --html`
 succeeding, which establishes that the document *compiles*, not that it *matches
 the original*.
 
-Every defect this report set out to find has been fixed, with one exception
-discovered afterwards: Chapter 7's equation numbering is displaced by two
-(#2). What remains open is listed at the end, and every item is tracked as an
-issue.
+Every defect it found has been fixed, including Chapter 7's displaced equation
+numbering, which surfaced after the first pass. What remains open is listed at
+the end; each item is tracked as an issue and is a judgement call rather than a
+defect.
 
 ---
 
@@ -82,7 +82,7 @@ have been fixed.
 
 | Item | Count | Note |
 |---|---:|---|
-| Labelled equations | 117 | every number 1..max labelled in each chapter |
+| Labelled equations | 115 | matches the printed numbering in every chapter |
 | Figure labels | 48 | all image references resolve |
 | Footnote definitions | 160 | sequential `fn1`–`fn160`, every marker paired |
 | Citations linked | 188 | was 0 before this pass |
@@ -207,23 +207,33 @@ defect. All three are open, tracked in issue #3:
 | eq-5-13 | `Nf(G_{t+1})` | `Nf(G_t)` | MyST matches the derivation, but ch05.md line 461 still reproduces the printed form, so the file contradicts itself |
 | eq-2-14 | tag on the 1st display | tag on the 2nd | cosmetic; eq-2-15 and eq-2-18 follow the print, so eq-2-14 is the odd one out |
 
-### What the equation audit did not check
+### What the equation audit did not check, and what it missed
 
-It compared equation *content* against the scans. It never checked that the
-MyST's equation *numbers* correspond to the book's — and in Chapter 7 they do
-not. The book numbers eight equations there; the conversion labels ten, having
-given numbers to two displays the book leaves unnumbered (one of them set inline
-in a sentence). Every ch07 equation number is therefore displaced by two: the
-book's equation (1) is the one labelled `eq-7-3`. Chapters 2 to 6 were checked
-the same way afterwards and all align correctly. Tracked in issue #2.
+It compared equation *content* against the scans, and never checked that the
+MyST's equation *numbers* correspond to the book's. In Chapter 7 they did not.
+The book numbers eight equations there; the conversion labelled ten, having
+given numbers to two displays the book leaves unnumbered — one of them set
+inline in a sentence. Every ch07 number was therefore displaced by two, so the
+book's equation (1) was the one labelled `eq-7-3`. Chapters 2 to 6 were checked
+the same way and all align correctly.
 
-`scripts/check_structure.py` cannot catch this either. It asserts that a
+**Fixed.** Each of the eight printed numbers was matched to its equation against
+renders of PDF pp. 175–177, the two extra displays were unnumbered (the first
+returned to inline, as printed), `eq-7-3`…`eq-7-10` were renumbered to
+`eq-7-1`…`eq-7-8`, and the 13 `{eq}` references following them were updated. The
+resulting reference targets — (2), (3), (6), (8) — are exactly the equations the
+book's own prose cites, which is an independent confirmation of the mapping.
+That is why the labelled-equation count in this report is 115 rather than 117.
+
+`scripts/check_structure.py` could not have caught this. It asserts that a
 chapter's labels form a complete 1..max run, which a uniformly displaced
 sequence satisfies perfectly. No check compares MyST numbering against the
-printed numbering, and none exists yet.
+printed numbering, and none exists — closing that would need the printed
+numbering as an input, which brings back the source-scan problem described
+under "Reproducing".
 
-This is worth stating plainly because the section above reads as though equation
-numbering were verified. It was not. Only content was.
+Worth stating plainly: the audit section above verified equation content, not
+equation numbering. The distinction is the whole reason this defect survived it.
 
 **Figures: 47 checked, 16 problems.** The figures were in materially worse shape
 than the equations — the reverse of what the prose-coverage work suggested.
@@ -318,9 +328,8 @@ cosmetic.
 Everything below is tracked as a GitHub issue, so this section and the issue
 list should not drift apart.
 
-**Chapter 7's equation numbering is displaced by two** from the printed book
-(#2). The two conversion errors found by the audit — eq-7-1's η and eq-4-14's
-dropped display — are fixed, so no equation *content* defect remains.
+No equation defect remains, of content or numbering. Chapter 7's displacement
+(#2), eq-7-1's η and eq-4-14's dropped companion display are all fixed.
 
 **Three equations and six figure captions silently correct the printed page**
 (#3), and all nine turn on a single decision: does this edition reproduce the
