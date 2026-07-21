@@ -72,16 +72,16 @@ content — e.g. it claimed `fn1–fn25` for ch02, which really holds 32 footnot
 
 | Chapter | File | Lines | Labelled eqs | Figure labels | Footnotes | Citations |
 |---------|------|------:|------:|------:|------:|------:|
-| Front matter + Ch 1: Introduction | `ch01.md` | 66 | 0 | 0 | 2 | 10 |
+| Front matter + Ch 1: Introduction | `ch01.md` | 75 | 0 | 0 | 2 | 10 |
 | Ch 2: Expectations and Behavior | `ch02.md` | 457 | 18 | 2 | 32 | 30 |
 | Ch 3: Data Structures | `ch03.md` | 431 | 19 | 2 | 15 | 27 |
-| Ch 4: Networks and AI | `ch04.md` | 542 | 14 | 7 | 23 | 18 |
-| Ch 5: Adaptation in Artificial Economies | `ch05.md` | 1,122 | 46 | 18 | 47 | 61 |
+| Ch 4: Networks and AI | `ch04.md` | 548 | 14 | 7 | 23 | 18 |
+| Ch 5: Adaptation in Artificial Economies | `ch05.md` | 1,131 | 46 | 18 | 47 | 62 |
 | Ch 6: Experiments | `ch06.md` | 291 | 10 | 15 | 18 | 17 |
-| Ch 7: Applications | `ch07.md` | 260 | 8 | 3 | 23 | 25 |
-| **Total** | | **3,169** | **115** | **48** | **160** | **188** |
+| Ch 7: Applications | `ch07.md` | 256 | 8 | 3 | 23 | 25 |
+| **Total** | | **3,189** | **115** | **48** | **160** | **189** |
 | References | `references.bib` | 1,660 | — | — | — | 198 entries |
-| Indexes | — | — | — | — | — | Omitted; MyST generates navigation |
+| Indexes | — | — | — | — | — | Omitted; decision tracked in issue #15 |
 
 Every equation number from 1 to each chapter's maximum now carries a label,
 every footnote marker pairs with a definition (`fn1`–`fn160`, no gaps), and
